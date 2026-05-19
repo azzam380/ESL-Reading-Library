@@ -25,4 +25,14 @@ export interface StudentRepository {
    * Retrieves students belonging to a specific class under a school tenant (e.g. "5-Alpha")
    */
   listByClass(schoolId: string, className: string): Promise<StudentProfile[]>;
+
+  /**
+   * Updates an existing student profile
+   */
+  update(student: StudentProfile): Promise<void>;
+
+  /**
+   * Deletes a student record
+   */
+  delete(schoolId: string, studentId: string): Promise<void>;
 }

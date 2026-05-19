@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useContentBuilderController } from '@/lib/controllers/ContentBuilderController';
-import { Users, BookOpen, Settings, Award, PlusCircle, LogOut } from 'lucide-react';
+import { Users, BookOpen, Settings, Award, PlusCircle, LogOut, Edit2, Trash2, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -26,8 +26,41 @@ export default function TeacherDashboard() {
     setRegGrade,
     regClass,
     setRegClass,
-    registerStudent
+    registerStudent,
+    editStudent,
+    deleteStudent
   } = useContentBuilderController();
+
+  // Local React states for inline student editing
+  const [editingStudentId, setEditingStudentId] = React.useState<string | null>(null);
+  const [editFirstName, setEditFirstName] = React.useState('');
+  const [editLastName, setEditLastName] = React.useState('');
+  const [editGrade, setEditGrade] = React.useState(5);
+  const [editClass, setEditClass] = React.useState('');
+  const [editXp, setEditXp] = React.useState(0);
+
+  const handleStartEdit = (student: any) => {
+    setEditingStudentId(student.id);
+    setEditFirstName(student.firstName);
+    setEditLastName(student.lastName);
+    setEditGrade(student.currentGrade);
+    const classParts = student.currentClass.split('-');
+    const classNameOnly = classParts.length > 1 ? classParts[1] : student.currentClass;
+    setEditClass(classNameOnly);
+    setEditXp(student.xp || 0);
+  };
+
+  const handleSaveEdit = async (student: any) => {
+    await editStudent({
+      ...student,
+      firstName: editFirstName,
+      lastName: editLastName,
+      currentGrade: editGrade,
+      currentClass: `${editGrade}-${editClass.toUpperCase()}`,
+      xp: editXp
+    });
+    setEditingStudentId(null);
+  };
 
   const handleLogout = () => {
     sessionStorage.removeItem('pell_session');
@@ -253,22 +286,134 @@ export default function TeacherDashboard() {
                     <th className="py-3 px-4">Grade</th>
                     <th className="py-3 px-4">Class</th>
                     <th className="py-3 px-4 text-right">XP Points</th>
+                    <th className="py-3 px-4 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-850">
-                  {students.map(s => (
-                    <tr key={s.id} className="hover:bg-slate-900/30 transition-colors duration-200">
-                      <td className="py-3 px-4 font-mono font-bold text-slate-400">{s.id}</td>
-                      <td className="py-3 px-4 font-semibold text-white">{s.firstName} {s.lastName}</td>
-                      <td className="py-3 px-4 text-slate-300">Grade {s.currentGrade}</td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-1 rounded bg-slate-950 border border-slate-800 font-medium text-slate-400">
-                          {s.currentClass}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right font-bold text-amber-400">{s.xp || 0} XP</td>
-                    </tr>
-                  ))}
+                  {students.map(s => {
+                    const isEditing = editingStudentId === s.id;
+                    return (
+                      <tr key={s.id} className="hover:bg-slate-900/30 transition-colors duration-200">
+                        <td className="py-3 px-4 font-mono font-bold text-slate-400 align-middle">{s.id}</td>
+                        <td className="py-3 px-4 font-semibold text-white align-middle animate-fadeIn">
+                          {isEditing ? (
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-xs text-white max-w-[110px] focus:outline-none focus:border-slate-700 font-normal"
+                                value={editFirstName}
+                                onChange={(e) => setEditFirstName(e.target.value)}
+                                placeholder="First Name"
+                                required
+                              />
+                              <input
+                                type="text"
+                                className="bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-xs text-white max-w-[110px] focus:outline-none focus:border-slate-700 font-normal"
+                                value={editLastName}
+                                onChange={(e) => setEditLastName(e.target.value)}
+                                placeholder="Last Name"
+                                required
+                              />
+                            </div>
+                          ) : (
+                            `${s.firstName} ${s.lastName}`
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-300 align-middle">
+                          {isEditing ? (
+                            <select
+                              className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-slate-700 font-normal"
+                              value={editGrade}
+                              onChange={(e) => setEditGrade(Number(e.target.value))}
+                            >
+                              {[3, 4, 5, 6, 7, 8].map(g => (
+                                <option key={g} value={g}>Grade {g}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            `Grade ${s.currentGrade}`
+                          )}
+                        </td>
+                        <td className="py-3 px-4 align-middle">
+                          {isEditing ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-slate-500 font-bold">{editGrade}-</span>
+                              <input
+                                type="text"
+                                className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white max-w-[70px] focus:outline-none focus:border-slate-700 font-normal uppercase"
+                                value={editClass}
+                                onChange={(e) => setEditClass(e.target.value)}
+                                placeholder="Class"
+                                required
+                              />
+                            </div>
+                          ) : (
+                            <span className="px-2 py-1 rounded bg-slate-950 border border-slate-800 font-medium text-slate-400">
+                              {s.currentClass}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right font-bold text-amber-400 align-middle">
+                          {isEditing ? (
+                            <div className="flex justify-end items-center gap-1.5">
+                              <input
+                                type="number"
+                                className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white max-w-[70px] focus:outline-none focus:border-slate-700 text-right font-normal"
+                                value={editXp}
+                                onChange={(e) => setEditXp(Number(e.target.value))}
+                                placeholder="XP"
+                                required
+                              />
+                              <span className="text-[10px] text-slate-400">XP</span>
+                            </div>
+                          ) : (
+                            `${s.xp || 0} XP`
+                          )}
+                        </td>
+                        <td className="py-3 px-4 align-middle">
+                          <div className="flex gap-2 justify-center">
+                            {isEditing ? (
+                              <>
+                                <button
+                                  onClick={() => handleSaveEdit(s)}
+                                  disabled={isLoading}
+                                  title="Simpan"
+                                  className="p-1.5 bg-emerald-950/50 border border-emerald-900/60 hover:bg-emerald-900/50 text-emerald-400 rounded-lg cursor-pointer transition-colors duration-200"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => setEditingStudentId(null)}
+                                  title="Batal"
+                                  className="p-1.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 rounded-lg cursor-pointer transition-colors duration-200"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleStartEdit(s)}
+                                  title="Edit"
+                                  className="p-1.5 bg-indigo-950/40 border border-indigo-900/50 hover:bg-indigo-900/50 text-indigo-300 rounded-lg cursor-pointer transition-all duration-300"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => deleteStudent(s.id)}
+                                  disabled={isLoading}
+                                  title="Hapus"
+                                  className="p-1.5 bg-red-950/40 border border-red-900/50 hover:bg-red-900/50 text-red-300 rounded-lg cursor-pointer transition-all duration-300"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

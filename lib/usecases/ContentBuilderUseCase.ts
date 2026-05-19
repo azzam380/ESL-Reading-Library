@@ -121,4 +121,15 @@ export class ContentBuilderUseCase {
     await this.studentRepo.create(student);
     return student;
   }
+
+  async updateStudent(student: StudentProfile): Promise<void> {
+    if (!student.firstName.trim()) throw new Error('First name cannot be empty.');
+    if (!student.lastName.trim()) throw new Error('Last name cannot be empty.');
+    if (!student.currentClass.trim()) throw new Error('Class cannot be empty.');
+    await this.studentRepo.update(student);
+  }
+
+  async deleteStudent(schoolId: string, studentId: string): Promise<void> {
+    await this.studentRepo.delete(schoolId, studentId);
+  }
 }

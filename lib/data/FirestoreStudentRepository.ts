@@ -1,7 +1,7 @@
 import { StudentRepository } from '../repositories/StudentRepository';
 import { StudentProfile } from '@/types/student';
 import { db, isDemoEnv } from '@/firebase/config';
-import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, increment } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, increment, deleteDoc } from 'firebase/firestore';
 
 // Initial mock student database for localized demo environments
 const INITIAL_DEMO_STUDENTS: StudentProfile[] = [
@@ -185,6 +185,44 @@ export class FirestoreStudentRepository implements StudentRepository {
     } catch (error) {
       console.error('Error listing class students from Firestore:', error);
       return [];
+    }
+  }
+
+  async update(student: StudentProfile): Promise<void> {
+    if (isDemoEnv()) {
+      const students = this.getDemoStudents();
+      const idx = students.findIndex(s => s.schoolId === student.schoolId && s.id === student.id);
+      if (idx !== -1) {
+        students[idx] = { ...student, updatedAt: new Date().toISOString() };
+        this.saveDemoStudents(students);
+        return;
+      }
+      throw new Error(`Student ${student.id} not found in local demo database.`);
+    }
+
+    try {
+      const studentDocRef = doc(db, 'schools', student.schoolId, 'students', student.id);
+      await setDoc(studentDocRef, { ...student, updatedAt: new Date().toISOString() }, { merge: true });
+    } catch (error) {
+      console.error('Error updating student in Firestore:', error);
+      throw error;
+    }
+  }
+
+  async delete(schoolId: string, studentId: string): Promise<void> {
+    if (isDemoEnv()) {
+      const students = this.getDemoStudents();
+      const filtered = students.filter(s => !(s.schoolId === schoolId && s.id === studentId));
+      this.saveDemoStudents(filtered);
+      return;
+    }
+
+    try {
+      const studentDocRef = doc(db, 'schools', schoolId, 'students', studentId);
+      await deleteDoc(studentDocRef);
+    } catch (error) {
+      console.error('Error deleting student from Firestore:', error);
+      throw error;
     }
   }
 }

@@ -140,16 +140,21 @@ export default function LoginPage() {
         {/* Dynamic Sandbox Login Guide */}
         <div className="w-full bg-slate-900/40 border border-slate-900 rounded-2xl p-4 flex flex-col gap-2">
           <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">DEVELOPER QUICK LOGIN GUIDE</span>
-          <div className="grid grid-cols-2 gap-3 text-[10px] text-slate-400">
+          <div className="grid grid-cols-3 gap-2.5 text-[9px] text-slate-400">
             <div className="flex flex-col bg-slate-950/60 rounded-lg p-2 border border-slate-900">
-              <span className="font-semibold text-slate-300">Staff Account:</span>
-              <span className="font-mono text-indigo-400">teacher@pell.edu</span>
-              <span>Pass: <span className="font-mono text-slate-300">12345</span></span>
+              <span className="font-semibold text-slate-300">Admin Sekolah:</span>
+              <span className="font-mono text-indigo-400 truncate">admin@pell.edu</span>
+              <span>Pass: <span className="font-mono text-slate-300">12345678</span></span>
+            </div>
+            <div className="flex flex-col bg-slate-950/60 rounded-lg p-2 border border-slate-900">
+              <span className="font-semibold text-slate-300">Teacher:</span>
+              <span className="font-mono text-indigo-400 truncate">teacher@pell.edu</span>
+              <span>Pass: <span className="font-mono text-slate-300">12345678</span></span>
             </div>
             <div className="flex flex-col bg-slate-950/60 rounded-lg p-2 border border-slate-900">
               <span className="font-semibold text-slate-300">Student ID:</span>
-              <span className="font-mono text-emerald-400">AAR-0001</span>
-              <span>Pass: <span className="font-mono text-slate-300">12345</span></span>
+              <span className="font-mono text-emerald-400 truncate">AAR-0001</span>
+              <span>Pass: <span className="font-mono text-slate-300">12345678</span></span>
             </div>
           </div>
         </div>

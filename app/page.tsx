@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   BookOpen, 
   Users, 
@@ -23,7 +24,65 @@ import { generateStudentId } from '../lib/domain/idGenerator';
 import { Book, StudentProfile } from '../types';
 
 export default function Home() {
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
   const { schoolId, config, setManualSchoolId } = useSchool();
+
+  // Verify session and perform role-based redirection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const sessionStr = sessionStorage.getItem('pell_session');
+      if (sessionStr) {
+        try {
+          const session = JSON.parse(sessionStr);
+          if (session && session.type === 'staff') {
+            router.replace('/teacher/dashboard');
+          } else if (session && session.type === 'student') {
+            router.replace('/student/dashboard');
+          } else {
+            router.replace('/login');
+          }
+        } catch (e) {
+          router.replace('/login');
+        }
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [router]);
+
+  if (isChecking) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        {/* Background Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
+        
+        <div className="flex flex-col items-center text-center gap-6 z-10">
+          {/* Pulsing Animated Brand Logo Container */}
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            {/* Outer spinning gradient ring */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 animate-spin-slow blur-sm opacity-70" />
+            <div className="absolute inset-0.5 rounded-2xl bg-slate-950" />
+            
+            {/* Inner pulsing logo icon */}
+            <BookMarked className="w-9 h-9 text-indigo-400 animate-pulse relative z-10" />
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            <h1 className="text-xl font-bold uppercase tracking-widest text-white leading-none">PELL</h1>
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider font-display">Progressive English Learning Library</p>
+          </div>
+          
+          {/* Smooth custom loading bar */}
+          <div className="w-48 bg-slate-900 border border-slate-850 rounded-full h-1.5 overflow-hidden p-0.5 mt-2 relative">
+            <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-loading-bar w-full" />
+          </div>
+          
+          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest animate-pulse">Initializing Portal...</span>
+        </div>
+      </main>
+    );
+  }
   
   // Dashboard states
   const [activeTab, setActiveTab] = useState<'library' | 'students' | 'school' | 'analytics'>('library');

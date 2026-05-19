@@ -14,6 +14,11 @@ const firebaseConfig = {
 };
 
 export const isDemoEnv = () => {
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return true;
+    }
+  }
   return firebaseConfig.apiKey === 'placeholder-api-key' || !firebaseConfig.apiKey;
 };
 

@@ -59,6 +59,8 @@ export interface UseContentBuilderControllerReturn {
   addTopic: (e: React.FormEvent) => Promise<void>;
   addQuestion: (e: React.FormEvent) => Promise<void>;
   registerStudent: (e: React.FormEvent) => Promise<void>;
+  editStudent: (student: StudentProfile) => Promise<void>;
+  deleteStudent: (studentId: string) => Promise<void>;
   loadData: () => Promise<void>;
 }
 
@@ -237,6 +239,38 @@ export function useContentBuilderController(): UseContentBuilderControllerReturn
     }
   };
 
+  const editStudent = async (student: StudentProfile) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await useCase.updateStudent(student);
+      setSuccess('Student profile updated successfully!');
+      await loadData();
+    } catch (err) {
+      const errorObj = err as Error;
+      setError(errorObj.message || 'Error updating student.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteStudent = async (studentId: string) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await useCase.deleteStudent(schoolId, studentId);
+      setSuccess('Student profile deleted successfully!');
+      await loadData();
+    } catch (err) {
+      const errorObj = err as Error;
+      setError(errorObj.message || 'Error deleting student.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     teacher,
     schoolId,
@@ -280,6 +314,8 @@ export function useContentBuilderController(): UseContentBuilderControllerReturn
     addTopic,
     addQuestion,
     registerStudent,
+    editStudent,
+    deleteStudent,
     loadData
   };
 }

@@ -87,8 +87,8 @@ export class AuthService {
 
       if (isDemoEnv()) {
         // Simple demo password match validation
-        if (password !== '12345' && password !== studentId) {
-          throw new Error('Incorrect password. For demo students, please use password "12345".');
+        if (password !== '12345678' && password !== studentId) {
+          throw new Error('Incorrect password. For demo students, please use password "12345678".');
         }
         
         return {
@@ -119,8 +119,8 @@ export class AuthService {
           throw new Error(`No registered teacher or administrator found for email: ${trimmed}`);
         }
         
-        if (password !== '12345') {
-          throw new Error('Incorrect password. For demo teachers, please use password "12345".');
+        if (password !== '12345678') {
+          throw new Error('Incorrect password. For demo teachers, please use password "12345678".');
         }
 
         return {
