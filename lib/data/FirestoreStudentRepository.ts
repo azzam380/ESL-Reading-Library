@@ -1,7 +1,7 @@
 import { StudentRepository } from '../repositories/StudentRepository';
 import { StudentProfile } from '@/types/student';
 import { db, isDemoEnv } from '@/firebase/config';
-import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, increment, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, increment, deleteDoc, arrayUnion } from 'firebase/firestore';
 
 // Initial mock student database for localized demo environments
 const INITIAL_DEMO_STUDENTS: StudentProfile[] = [
@@ -222,6 +222,46 @@ export class FirestoreStudentRepository implements StudentRepository {
       await deleteDoc(studentDocRef);
     } catch (error) {
       console.error('Error deleting student from Firestore:', error);
+      throw error;
+    }
+  }
+
+  async completeTopic(schoolId: string, studentId: string, topicId: string, xpDelta: number): Promise<StudentProfile> {
+    if (isDemoEnv()) {
+      const students = this.getDemoStudents();
+      const idx = students.findIndex(s => s.schoolId === schoolId && s.id === studentId);
+      if (idx !== -1) {
+        const student = students[idx];
+        student.xp = (student.xp || 0) + xpDelta;
+        const completed = student.completedTopics || [];
+        if (!completed.includes(topicId)) {
+          completed.push(topicId);
+        }
+        student.completedTopics = completed;
+        student.updatedAt = new Date().toISOString();
+        
+        students[idx] = student;
+        this.saveDemoStudents(students);
+        return student;
+      }
+      throw new Error(`Student ${studentId} not found in local demo database.`);
+    }
+
+    try {
+      const studentDocRef = doc(db, 'schools', schoolId, 'students', studentId);
+      await updateDoc(studentDocRef, {
+        xp: increment(xpDelta),
+        completedTopics: arrayUnion(topicId),
+        updatedAt: new Date().toISOString()
+      });
+      
+      const updatedSnap = await getDoc(studentDocRef);
+      if (updatedSnap.exists()) {
+        return updatedSnap.data() as StudentProfile;
+      }
+      throw new Error(`Student ${studentId} could not be refetched after updating.`);
+    } catch (error) {
+      console.error('Error completing topic in Firestore:', error);
       throw error;
     }
   }

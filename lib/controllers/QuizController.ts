@@ -126,20 +126,20 @@ export function useQuizController(): UseQuizControllerReturn {
     } else {
       // Quiz complete! Calculate dynamic payouts and trigger database updates
       setQuizCompleted(true);
-      if (student && xpEarned > 0) {
+      if (student && topic) {
         try {
-          const updatedXp = await studentRepo.updateXp(student.schoolId, student.id, xpEarned);
+          const updatedStudent = await studentRepo.completeTopic(student.schoolId, student.id, topic.id, xpEarned);
           
           // Sync changes back into active sessionStorage session
           const sessionData = sessionStorage.getItem('pell_session');
           if (sessionData) {
             const parsed = JSON.parse(sessionData);
-            parsed.user.xp = updatedXp;
+            parsed.user = updatedStudent;
             sessionStorage.setItem('pell_session', JSON.stringify(parsed));
             setStudent(parsed.user);
           }
         } catch (err) {
-          console.error('Error writing XP increments to Firestore:', err);
+          console.error('Error writing topic completion to database:', err);
         }
       }
     }

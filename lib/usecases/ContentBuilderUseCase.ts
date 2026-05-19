@@ -115,6 +115,7 @@ export class ContentBuilderUseCase {
       enrollmentYear: new Date().getFullYear(),
       isActive: true,
       history: [],
+      completedTopics: [],
       createdAt: new Date().toISOString()
     };
 

@@ -35,4 +35,9 @@ export interface StudentRepository {
    * Deletes a student record
    */
   delete(schoolId: string, studentId: string): Promise<void>;
+
+  /**
+   * Completes a learning topic, increments XP, and registers the completed topic ID.
+   */
+  completeTopic(schoolId: string, studentId: string, topicId: string, xpDelta: number): Promise<StudentProfile>;
 }

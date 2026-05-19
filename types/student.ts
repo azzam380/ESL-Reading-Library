@@ -22,6 +22,7 @@ export interface StudentProfile {
   enrollmentYear: number;  // e.g. 2026
   isActive: boolean;
   history: AcademicHistoryRecord[]; // Historical snapshots
+  completedTopics?: string[];       // Array of completed topic/quiz IDs
   
   createdAt: string;
   updatedAt?: string;

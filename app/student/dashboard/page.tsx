@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuizController } from '@/lib/controllers/QuizController';
 import { FirestoreQuestionRepository } from '@/lib/data/FirestoreQuestionRepository';
 import { TopicEntity } from '@/types/quiz';
-import { Award, Compass, Lock, LogOut, Play, Sparkles, BookOpen } from 'lucide-react';
+import { Award, Compass, Lock, LogOut, Play, Sparkles, BookOpen, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -147,15 +147,28 @@ export default function StudentDashboard() {
               {topics.map((t, idx) => {
                 // First topic is always unlocked. Order 2 requires 50 XP
                 const isUnlocked = idx === 0 || xp >= 50;
+                const isCompleted = student?.completedTopics?.includes(t.id);
 
                 return (
                   <div
                     key={t.id}
-                    className={`bg-slate-900/60 border ${isUnlocked ? borderHighlight : 'border-slate-900/50'} rounded-3xl p-6 transition-all duration-300 flex flex-col justify-between gap-6 relative`}
+                    className={`bg-slate-900/60 border ${
+                      isCompleted 
+                        ? 'border-emerald-500/40 shadow-emerald-500/5' 
+                        : isUnlocked 
+                          ? borderHighlight 
+                          : 'border-slate-900/50'
+                    } rounded-3xl p-6 transition-all duration-300 flex flex-col justify-between gap-6 relative`}
                   >
                     {!isUnlocked && (
                       <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/80 border border-slate-850 flex items-center justify-center text-slate-500">
                         <Lock className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                    {isCompleted && (
+                      <div className="absolute top-4 right-4 flex items-center gap-1 bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider animate-pulse">
+                        <CheckCircle className="w-3 h-3" />
+                        <span>Done</span>
                       </div>
                     )}
 
@@ -174,10 +187,14 @@ export default function StudentDashboard() {
                     {isUnlocked ? (
                       <Link
                         href={`/student/quiz/${t.id}`}
-                        className={`flex items-center justify-center gap-2 bg-slate-950 border border-slate-850 hover:bg-slate-900 text-xs font-bold text-white rounded-xl py-3 shadow-md transition-all duration-300 group`}
+                        className={`flex items-center justify-center gap-2 ${
+                          isCompleted
+                            ? 'bg-emerald-950/40 border border-emerald-500/30 hover:bg-emerald-900/40 text-emerald-400 shadow-lg shadow-emerald-950/20'
+                            : 'bg-slate-950 border border-slate-850 hover:bg-slate-900 text-white'
+                        } text-xs font-bold rounded-xl py-3 shadow-md transition-all duration-300 group`}
                       >
-                        <Play className={`w-3.5 h-3.5 ${accentColor} group-hover:scale-110 transition-transform`} />
-                        <span>Start Milestone Quiz</span>
+                        <Play className={`w-3.5 h-3.5 ${isCompleted ? 'text-emerald-400' : accentColor} group-hover:scale-110 transition-transform`} />
+                        <span>{isCompleted ? 'Ulangi Lagi (Retake)' : 'Start Milestone Quiz'}</span>
                       </Link>
                     ) : (
                       <button
