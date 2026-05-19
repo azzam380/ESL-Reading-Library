@@ -28,8 +28,12 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${outfit.variable} h-full antialiased dark`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full bg-slate-950 text-slate-100 font-sans flex flex-col antialiased">
+      <body 
+        className="min-h-full bg-slate-950 text-slate-100 font-sans flex flex-col antialiased"
+        suppressHydrationWarning
+      >
         <AuthProvider>
           <SchoolProvider>
             {children}
